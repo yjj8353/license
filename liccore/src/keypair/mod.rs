@@ -5,6 +5,9 @@ pub struct KeyPair {
 
 pub trait SignatureAlgorithm: Sized {
 
+    /// 생성자
+    fn new() -> Self;
+
     /// 키 생성
     fn generate() -> Result<Self, Box<dyn std::error::Error>>;
 
@@ -24,7 +27,7 @@ pub trait SignatureAlgorithm: Sized {
     fn from_private_pem(pem: &str) -> Result<Self, Box<dyn std::error::Error>>;
 
     /// 공개키 설정
-    fn set_public_key(&mut self, public_key: &[u8]);
+    fn set_public_key_pem(&mut self, public_key_pem: &str);
 }
 
 pub mod ed25519;

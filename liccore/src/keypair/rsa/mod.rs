@@ -41,6 +41,15 @@ impl RsaKeyPair {
 }
 
 impl SignatureAlgorithm for RsaKeyPair {
+    fn new() -> Self {
+        Self {
+            key_pair: KeyPair {
+                private_key: Vec::new(),
+                public_key: Vec::new(),
+            },
+        }
+    }
+
     /// 2048비트 RSA 키 쌍 생성
     fn generate() -> Result<Self, Box<dyn std::error::Error>> {
         Self::generate_with_bits(DEFAULT_KEY_BITS)
@@ -88,8 +97,8 @@ impl SignatureAlgorithm for RsaKeyPair {
         })
     }
 
-    fn set_public_key(&mut self, public_key: &[u8]) {
-        self.key_pair.public_key = public_key.to_vec();
+    fn set_public_key_pem(&mut self, public_key_pem: &str) {
+        self.key_pair.public_key = public_key_pem.as_bytes().to_vec();
     }
 }
 

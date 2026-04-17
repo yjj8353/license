@@ -36,6 +36,15 @@ impl Ed25519KeyPair {
 }
 
 impl SignatureAlgorithm for Ed25519KeyPair {
+    fn new() -> Self {
+        Self {
+            key_pair: KeyPair {
+                private_key: Vec::new(),
+                public_key: Vec::new(),
+            },
+        }
+    }
+
     /// Ed25519 키 쌍 생성 (키 길이 고정: 256 bit)
     fn generate() -> Result<Self, Box<dyn std::error::Error>> {
         let signing_key = SigningKey::generate(&mut OsRng);
@@ -90,8 +99,8 @@ impl SignatureAlgorithm for Ed25519KeyPair {
         })
     }
 
-    fn set_public_key(&mut self, public_key: &[u8]) {
-        self.key_pair.public_key = public_key.to_vec();
+    fn set_public_key_pem(&mut self, public_key_pem: &str) {
+        self.key_pair.public_key = public_key_pem.as_bytes().to_vec();
     }
 }
 

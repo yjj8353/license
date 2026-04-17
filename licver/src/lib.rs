@@ -5,10 +5,9 @@ use base64::Engine;
 use liccore::base::Base;
 use liccore::base::base64::Base64;
 use liccore::ffi_utils::to_str;
-use liccore::keypair::rsa::verify_with_public_key;
+use liccore::keypair::SignatureAlgorithm;
+use liccore::keypair::rsa::RsaKeyPair;
 use liccore::license::License;
-use rsa::pkcs8::DecodePublicKey;
-use rsa::RsaPublicKey;
 
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn license_verify(
@@ -59,14 +58,11 @@ pub unsafe extern "C" fn license_verify(
         Err(_) => return -5,
     };
 
-    let pub_key = match RsaPublicKey::from_public_key_pem(&public_key_pem) {
-        Ok(v) => v,
-        Err(_) => return -6,
-    };
-
-    if verify_with_public_key(&pub_key, payload_json.as_bytes(), &signature_bytes) {
-        0
+    let mut key_pair = RsaKeyPair::new();
+    key_pair.set_public_key_pem(&public_key_pem);
+    if key_pair.verify(payload_json.as_bytes(), &signature_bytes) {
+        return 0;
     } else {
-        -7
+        return -7;
     }
 }
