@@ -1,3 +1,8 @@
+pub struct KeyPair {
+    pub private_key: Vec<u8>,
+    pub public_key: Vec<u8>,
+}
+
 pub trait SignatureAlgorithm: Sized {
 
     /// 키 생성
@@ -20,11 +25,6 @@ pub trait SignatureAlgorithm: Sized {
 
     /// 공개키 설정
     fn set_public_key(&mut self, public_key: &[u8]);
-}
-
-pub struct KeyPair {
-    pub private_key: Vec<u8>,
-    pub public_key: Vec<u8>,
 }
 
 pub mod ed25519;

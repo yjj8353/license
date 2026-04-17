@@ -4,7 +4,7 @@ use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use liccore::base::Base;
 use liccore::base::base64::Base64;
-use liccore::common::to_str;
+use liccore::ffi_utils::to_str;
 use liccore::keypair::rsa::verify_with_public_key;
 use liccore::license::License;
 use rsa::pkcs8::DecodePublicKey;

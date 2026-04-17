@@ -1,4 +1,4 @@
 pub mod base;
-pub mod common;
+pub mod ffi_utils;
 pub mod keypair;
 pub mod license;

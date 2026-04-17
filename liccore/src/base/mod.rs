@@ -5,4 +5,5 @@ pub trait Base {
     fn decode_str(encoded_value: &str) -> Result<String, String>;
 }
 
+pub mod base16;
 pub mod base64;
