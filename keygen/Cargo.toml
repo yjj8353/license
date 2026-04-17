@@ -1,0 +1,16 @@
+[package]
+name = "keygen"
+version = "0.1.0"
+edition = "2024"
+build = "build.rs"
+
+[lib]
+name = "keygen"
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+liccore = { path = "../liccore" }  # 공유 크레이트 참조
+base64 = "0.22"
+
+[build-dependencies]
+cbindgen = "0.29"

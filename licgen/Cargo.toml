@@ -1,0 +1,19 @@
+[package]
+name = "licgen"
+version = "0.1.0"
+edition = "2024"
+build = "build.rs"
+
+[lib]
+name = "licgen"
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+liccore = { path = "../liccore" }  # 공유 크레이트 참조
+base64 = "0.22"
+
+[dev-dependencies]
+rsa = { version = "0.9", features = ["pem"] }
+
+[build-dependencies]
+cbindgen = "0.29"

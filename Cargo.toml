@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "keygen",
+    "liccore",
+    "licgen",
+    "licver",
+]
+resolver = "2"
