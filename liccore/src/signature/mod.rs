@@ -1,3 +1,5 @@
+use std::error::Error;
+
 pub struct KeyPair {
     pub private_key: Vec<u8>,
     pub public_key: Vec<u8>,
@@ -9,7 +11,7 @@ pub trait DigitalSignature: Sized {
     fn new() -> Self;
 
     /// 키 생성
-    fn generate() -> Result<Self, Box<dyn std::error::Error>>;
+    fn generate() -> Result<Self, Box<dyn Error>>;
 
     /// 데이터 서명
     fn sign(&self, data: &[u8]) -> Vec<u8>;
@@ -18,13 +20,13 @@ pub trait DigitalSignature: Sized {
     fn verify(&self, data: &[u8], signature: &[u8]) -> bool;
 
     /// 개인키 PEM 내보내기
-    fn private_key_pem(&self) -> Result<String, Box<dyn std::error::Error>>;
+    fn private_key_pem(&self) -> Result<String, Box<dyn Error>>;
 
     /// 공개키 PEM 내보내기
-    fn public_key_pem(&self) -> Result<String, Box<dyn std::error::Error>>;
+    fn public_key_pem(&self) -> Result<String, Box<dyn Error>>;
 
     /// 개인키 PEM에서 키 쌍 복원
-    fn from_private_pem(pem: &str) -> Result<Self, Box<dyn std::error::Error>>;
+    fn from_private_pem(pem: &str) -> Result<Self, Box<dyn Error>>;
 
     /// 공개키 설정
     fn set_public_key_pem(&mut self, public_key_pem: &str);

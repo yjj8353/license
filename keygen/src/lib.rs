@@ -35,10 +35,10 @@ pub unsafe extern "C" fn keypair_generate(
     }
 
     // NULL 포인터는 out_len이 0일 때만 허용
-    if (public_query_mode && public_out_len != 0)
-        || (private_query_mode && private_out_len != 0)
-        || (!public_query_mode && public_out_len == 0)
-        || (!private_query_mode && private_out_len == 0)
+    if public_query_mode && public_out_len != 0
+        || private_query_mode && private_out_len != 0
+        || !public_query_mode && public_out_len == 0
+        || !private_query_mode && private_out_len == 0
     {
         return ERR_INVALID_ARG;
     }

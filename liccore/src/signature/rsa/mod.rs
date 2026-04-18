@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use rand_core::OsRng;
 use rsa::sha2::Sha256;
 use rsa::{
@@ -18,16 +20,16 @@ pub struct RsaKeyPair {
 }
 
 impl RsaKeyPair {
-    fn private_key(&self) -> Result<RsaPrivateKey, Box<dyn std::error::Error>> {
+    fn private_key(&self) -> Result<RsaPrivateKey, Box<dyn Error>> {
         Ok(RsaPrivateKey::from_pkcs8_der(&self.key_pair.private_key)?)
     }
 
-    fn public_key(&self) -> Result<RsaPublicKey, Box<dyn std::error::Error>> {
+    fn public_key(&self) -> Result<RsaPublicKey, Box<dyn Error>> {
         Ok(RsaPublicKey::from_public_key_der(&self.key_pair.public_key)?)
     }
 
     /// 지정한 비트 길이로 RSA 키 쌍 생성
-    pub fn generate_with_bits(bits: usize) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn generate_with_bits(bits: usize) -> Result<Self, Box<dyn Error>> {
         let private_key = RsaPrivateKey::new(&mut OsRng, bits)?;
         let public_key = RsaPublicKey::from(&private_key);
 
@@ -51,7 +53,7 @@ impl DigitalSignature for RsaKeyPair {
     }
 
     /// 2048비트 RSA 키 쌍 생성
-    fn generate() -> Result<Self, Box<dyn std::error::Error>> {
+    fn generate() -> Result<Self, Box<dyn Error>> {
         Self::generate_with_bits(DEFAULT_KEY_BITS)
     }
 
@@ -75,17 +77,17 @@ impl DigitalSignature for RsaKeyPair {
     }
 
     /// 개인키 → PKCS#8 PEM 문자열로 내보내기
-    fn private_key_pem(&self) -> Result<String, Box<dyn std::error::Error>> {
+    fn private_key_pem(&self) -> Result<String, Box<dyn Error>> {
         Ok(self.private_key()?.to_pkcs8_pem(LineEnding::LF)?.to_string())
     }
 
     /// 공개키 → SPKI PEM 문자열로 내보내기
-    fn public_key_pem(&self) -> Result<String, Box<dyn std::error::Error>> {
+    fn public_key_pem(&self) -> Result<String, Box<dyn Error>> {
         Ok(self.public_key()?.to_public_key_pem(LineEnding::LF)?)
     }
 
     /// PKCS#8 PEM 개인키 문자열에서 키 쌍 복원
-    fn from_private_pem(pem: &str) -> Result<Self, Box<dyn std::error::Error>> {
+    fn from_private_pem(pem: &str) -> Result<Self, Box<dyn Error>> {
         let private_key = RsaPrivateKey::from_pkcs8_pem(pem)?;
         let public_key = RsaPublicKey::from(&private_key);
 

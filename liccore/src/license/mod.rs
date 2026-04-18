@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
+/// 라이선스 발급 유형
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum IssuanceType {
@@ -19,6 +20,7 @@ pub enum IssuanceType {
     Reissue,
 }
 
+/// 문자열에서 IssuanceType으로 변환
 impl FromStr for IssuanceType {
     type Err = &'static str;
 
@@ -33,6 +35,7 @@ impl FromStr for IssuanceType {
     }
 }
 
+/// 재발급 사유
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ReissueReason {
@@ -53,6 +56,7 @@ pub enum ReissueReason {
     SecurityIncident,
 }
 
+/// 문자열에서 ReissueReason으로 변환
 impl FromStr for ReissueReason {
     type Err = &'static str;
 
@@ -68,7 +72,7 @@ impl FromStr for ReissueReason {
     }
 }
 
-
+/// 라이선스 정보 구조체
 #[derive(Debug, Serialize, Deserialize)]
 pub struct License {
 
@@ -101,6 +105,7 @@ pub struct License {
     pub license_version: String,
 }
 
+/// License 구조체의 메서드 구현
 impl License {
     pub fn new(
         product_name: String,
@@ -126,16 +131,17 @@ impl License {
         }
     }
 
-    // JSON 문자열로 변경
+    /// JSON 문자열로 변경
     pub fn to_json(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string(self)
     }
 
-    // JSON 문자열을 License 구조체로 변경
+    /// JSON 문자열을 License 구조체로 변경
     pub fn from_json(json: &str) -> Result<Self, serde_json::Error> {
         serde_json::from_str(json)
     }
 
+    /// 라이선스 정보의 유효성 검사
     pub fn validate(&self) -> Result<(), &'static str> {
         match (&self.issuance_type, &self.reissue_reason) {
             (IssuanceType::Reissue, Some(_)) => Ok(()),

@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use ed25519_dalek::{
     Signature, SigningKey, VerifyingKey,
     pkcs8::{DecodePrivateKey, EncodePrivateKey, spki::EncodePublicKey},
@@ -14,7 +16,7 @@ pub struct Ed25519KeyPair {
 }
 
 impl Ed25519KeyPair {
-    fn signing_key(&self) -> Result<SigningKey, Box<dyn std::error::Error>> {
+    fn signing_key(&self) -> Result<SigningKey, Box<dyn Error>> {
         let bytes: [u8; 32] = self.key_pair.private_key.as_slice().try_into().map_err(|_| {
             std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
@@ -24,7 +26,7 @@ impl Ed25519KeyPair {
         Ok(SigningKey::from_bytes(&bytes))
     }
 
-    fn verifying_key(&self) -> Result<VerifyingKey, Box<dyn std::error::Error>> {
+    fn verifying_key(&self) -> Result<VerifyingKey, Box<dyn Error>> {
         let bytes: [u8; 32] = self.key_pair.public_key.as_slice().try_into().map_err(|_| {
             std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
@@ -46,7 +48,7 @@ impl DigitalSignature for Ed25519KeyPair {
     }
 
     /// Ed25519 키 쌍 생성 (키 길이 고정: 256 bit)
-    fn generate() -> Result<Self, Box<dyn std::error::Error>> {
+    fn generate() -> Result<Self, Box<dyn Error>> {
         let signing_key = SigningKey::generate(&mut OsRng);
         Ok(Self {
             key_pair: KeyPair {
@@ -79,17 +81,17 @@ impl DigitalSignature for Ed25519KeyPair {
     }
 
     /// 개인키 → PKCS#8 PEM 문자열로 내보내기
-    fn private_key_pem(&self) -> Result<String, Box<dyn std::error::Error>> {
+    fn private_key_pem(&self) -> Result<String, Box<dyn Error>> {
         Ok(self.signing_key()?.to_pkcs8_pem(LineEnding::LF)?.to_string())
     }
 
     /// 공개키 → SPKI PEM 문자열로 내보내기
-    fn public_key_pem(&self) -> Result<String, Box<dyn std::error::Error>> {
+    fn public_key_pem(&self) -> Result<String, Box<dyn Error>> {
         Ok(self.verifying_key()?.to_public_key_pem(LineEnding::LF)?)
     }
 
     /// PKCS#8 PEM 개인키 문자열에서 키 쌍 복원
-    fn from_private_pem(pem: &str) -> Result<Self, Box<dyn std::error::Error>> {
+    fn from_private_pem(pem: &str) -> Result<Self, Box<dyn Error>> {
         let signing_key = SigningKey::from_pkcs8_pem(pem)?;
         Ok(Self {
             key_pair: KeyPair {
