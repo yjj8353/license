@@ -5,8 +5,8 @@ use base64::Engine;
 use liccore::base::Base;
 use liccore::base::base64::Base64;
 use liccore::ffi_utils::to_str;
-use liccore::keypair::SignatureAlgorithm;
-use liccore::keypair::rsa::RsaKeyPair;
+use liccore::signature::DigitalSignature;
+use liccore::signature::rsa::RsaKeyPair;
 use liccore::license::License;
 
 #[unsafe(no_mangle)]

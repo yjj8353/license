@@ -9,7 +9,7 @@ use rsa::{
     RsaPrivateKey, RsaPublicKey,
 };
 
-use crate::keypair::{KeyPair, SignatureAlgorithm};
+use crate::signature::{KeyPair, DigitalSignature};
 
 const DEFAULT_KEY_BITS: usize = 2048;
 
@@ -40,7 +40,7 @@ impl RsaKeyPair {
     }
 }
 
-impl SignatureAlgorithm for RsaKeyPair {
+impl DigitalSignature for RsaKeyPair {
     fn new() -> Self {
         Self {
             key_pair: KeyPair {

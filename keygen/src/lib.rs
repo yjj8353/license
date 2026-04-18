@@ -1,4 +1,4 @@
-use liccore::keypair::{SignatureAlgorithm, ed25519::Ed25519KeyPair};
+use liccore::signature::{DigitalSignature, ed25519::Ed25519KeyPair};
 use std::ptr;
 
 const OK: i32 = 0;

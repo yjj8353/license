@@ -3,7 +3,7 @@ pub struct KeyPair {
     pub public_key: Vec<u8>,
 }
 
-pub trait SignatureAlgorithm: Sized {
+pub trait DigitalSignature: Sized {
 
     /// 생성자
     fn new() -> Self;

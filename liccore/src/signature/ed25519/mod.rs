@@ -6,7 +6,7 @@ use ed25519_dalek::ed25519::signature::{Signer, Verifier};
 use pkcs8::LineEnding;
 use rand_core::OsRng;
 
-use crate::keypair::{KeyPair, SignatureAlgorithm};
+use crate::signature::{KeyPair, DigitalSignature};
 
 /// Ed25519 개인키 + 공개키 쌍
 pub struct Ed25519KeyPair {
@@ -35,7 +35,7 @@ impl Ed25519KeyPair {
     }
 }
 
-impl SignatureAlgorithm for Ed25519KeyPair {
+impl DigitalSignature for Ed25519KeyPair {
     fn new() -> Self {
         Self {
             key_pair: KeyPair {

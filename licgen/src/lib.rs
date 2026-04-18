@@ -2,8 +2,8 @@ use std::os::raw::c_char;
 use std::ptr;
 use liccore::base::Base;
 use liccore::ffi_utils::to_str;
-use liccore::keypair::SignatureAlgorithm;
-use liccore::keypair::ed25519::Ed25519KeyPair;
+use liccore::signature::DigitalSignature;
+use liccore::signature::ed25519::Ed25519KeyPair;
 use liccore::license::{IssuanceType, License, ReissueReason};
 use liccore::base::base64::Base64;
 

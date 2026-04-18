@@ -5,6 +5,7 @@
         "KEYGEN",
         "Keypair",
         "liccore",
+        "nonoverlapping",
         "rlib",
         "serde"
     ]
