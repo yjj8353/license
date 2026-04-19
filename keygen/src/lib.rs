@@ -35,8 +35,8 @@ pub unsafe extern "C" fn keypair_generate(
     }
 
     // public_out_len과 private_out_len이 0이거나 public_key_out과 private_key_out이 NULL인 경우는 유효하지 않음
-    if public_key_out.is_null() || public_out_len != 0
-        || private_key_out.is_null() || private_out_len != 0 {
+    if public_key_out.is_null() || public_out_len == 0
+        || private_key_out.is_null() || private_out_len == 0 {
         return ERR_INVALID_ARG;
     }
 

@@ -2,7 +2,7 @@ use std::error::Error;
 
 use ed25519_dalek::{
     Signature, SigningKey, VerifyingKey,
-    pkcs8::{DecodePrivateKey, EncodePrivateKey, spki::EncodePublicKey},
+    pkcs8::{DecodePrivateKey, DecodePublicKey, EncodePrivateKey, spki::EncodePublicKey},
 };
 use ed25519_dalek::ed25519::signature::{Signer, Verifier};
 use pkcs8::LineEnding;
@@ -102,7 +102,9 @@ impl DigitalSignature for Ed25519KeyPair {
     }
 
     fn set_public_key_pem(&mut self, public_key_pem: &str) {
-        self.key_pair.public_key = public_key_pem.as_bytes().to_vec();
+        self.key_pair.public_key = VerifyingKey::from_public_key_pem(public_key_pem)
+            .map(|key| key.to_bytes().to_vec())
+            .unwrap_or_default();
     }
 }
 

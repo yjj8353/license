@@ -13,5 +13,9 @@ liccore = { path = "../liccore" }  # 공유 크레이트 참조
 rsa = { version = "0.9", features = ["pem", "sha2"] }
 base64 = "0.22.1"
 
+[dev-dependencies]
+keygen = { path = "../keygen" }
+licgen = { path = "../licgen" }
+
 [build-dependencies]
 cbindgen = "0.29"

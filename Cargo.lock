@@ -432,7 +432,9 @@ version = "0.1.0"
 dependencies = [
  "base64",
  "cbindgen",
+ "keygen",
  "liccore",
+ "licgen",
  "rsa",
 ]
 

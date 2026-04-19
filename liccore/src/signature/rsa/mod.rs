@@ -100,7 +100,10 @@ impl DigitalSignature for RsaKeyPair {
     }
 
     fn set_public_key_pem(&mut self, public_key_pem: &str) {
-        self.key_pair.public_key = public_key_pem.as_bytes().to_vec();
+        self.key_pair.public_key = RsaPublicKey::from_public_key_pem(public_key_pem)
+            .ok()
+            .and_then(|key| key.to_public_key_der().ok().map(|doc| doc.as_bytes().to_vec()))
+            .unwrap_or_default();
     }
 }
 
