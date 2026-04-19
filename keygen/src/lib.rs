@@ -2,10 +2,18 @@ use liccore::signature::{DigitalSignature, ed25519::Ed25519KeyPair};
 use std::ptr;
 
 const OK: i32 = 0;
+
+// -1: 잘못된 인자 (예: NULL 포인터, out_len과의 불일치 등)
 const ERR_INVALID_ARG: i32 = -1;
-const ERR_BUFFER_TOO_SMALL: i32 = -3;
-const ERR_KEYGEN_FAILED: i32 = -4;
-const ERR_SERIALIZE_FAILED: i32 = -5;
+
+// -2: 버퍼가 충분하지 않음 (out_len이 실제 키 길이보다 작은 경우)
+const ERR_BUFFER_TOO_SMALL: i32 = -2;
+
+// -3: 키 생성 실패
+const ERR_KEYGEN_FAILED: i32 = -3;
+
+// -4: PEM 직렬화 실패
+const ERR_SERIALIZE_FAILED: i32 = -4;
 
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn keypair_generate(
@@ -26,28 +34,19 @@ pub unsafe extern "C" fn keypair_generate(
         *private_written = 0;
     }
 
-    let public_query_mode = public_key_out.is_null();
-    let private_query_mode = private_key_out.is_null();
-
-    // 공개키/개인키는 같은 모드(둘 다 조회 or 둘 다 복사)로 처리
-    if public_query_mode != private_query_mode {
+    // public_out_len과 private_out_len이 0이거나 public_key_out과 private_key_out이 NULL인 경우는 유효하지 않음
+    if public_key_out.is_null() || public_out_len != 0
+        || private_key_out.is_null() || private_out_len != 0 {
         return ERR_INVALID_ARG;
     }
 
-    // NULL 포인터는 out_len이 0일 때만 허용
-    if public_query_mode && public_out_len != 0
-        || private_query_mode && private_out_len != 0
-        || !public_query_mode && public_out_len == 0
-        || !private_query_mode && private_out_len == 0
-    {
-        return ERR_INVALID_ARG;
-    }
-
+    // 키 생성
     let key_pair = match Ed25519KeyPair::generate() {
         Ok(kp) => kp,
         Err(_) => return ERR_KEYGEN_FAILED,
     };
 
+    // 공개/개인 키 PEM 직렬화
     let public_pem = match key_pair.public_key_pem() {
         Ok(v) => v,
         Err(_) => return ERR_SERIALIZE_FAILED,
@@ -65,10 +64,7 @@ pub unsafe extern "C" fn keypair_generate(
         *private_written = private_bytes.len();
     }
 
-    if public_query_mode {
-        return OK;
-    }
-
+    // 출력 버퍼가 충분한지 확인
     if public_out_len < public_bytes.len() || private_out_len < private_bytes.len() {
         return ERR_BUFFER_TOO_SMALL;
     }

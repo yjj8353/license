@@ -22,8 +22,9 @@ pub unsafe extern "C" fn license_generate(
     out_buf_len: usize,
     out_written: *mut usize,
 ) -> i32 {
+
     // 에러코드
-    // -1: out_buf,  out_written, out_buf_len이 유효하지 않음
+    // -1: 유효하지 않은 포인터 입력
     // -2: 유효하지 않은 issuance_type
     // -3: 유효하지 않은 reissue_reason
     // -4: 유효하지 않은 License 정보
@@ -33,14 +34,14 @@ pub unsafe extern "C" fn license_generate(
     // -8: 유효하지 않은 private_key
 
     // 값을 입력받을 포인터가 유효한지 확인
-    if out_buf.is_null() || out_written.is_null() || out_buf_len == 0 {
+    if out_buf.is_null() || out_written.is_null() {
         return -1;
     }
 
+    // private_key 포인터가 유효한지 확인
     if private_key.is_null() {
         return -8;
     }
-
     let private_key_pem = match to_str(private_key) {
         Some(value) if !value.trim().is_empty() => value,
         _ => return -8,
@@ -83,7 +84,7 @@ pub unsafe extern "C" fn license_generate(
                 Err(_) => return -2,
             };
 
-            // reissue_reason 파싱
+            // reissue_reason 파싱 (실패 시 -3 반환, parse_reissue_reason 클로저 참조)
             let reissue_reason = match parse_reissue_reason(to_str(reissue_reason)) {
                 Ok(value) => value,
                 Err(code) => return code,
@@ -115,6 +116,8 @@ pub unsafe extern "C" fn license_generate(
         Ok(json) => json,
         Err(_) => return -6,
     };
+
+    // private_key로 license_json에 서명 후, signature 필드에 서명값을 설정
     let key_pair = match Ed25519KeyPair::from_private_pem(&private_key_pem) {
         Ok(value) => value,
         Err(_) => return -8,

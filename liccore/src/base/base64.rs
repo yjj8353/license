@@ -18,16 +18,13 @@ impl Base for Base64 {
     }
 
     fn decode(encoded_value: Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
-        STANDARD
-            .decode(encoded_value)
-            .map_err(|e| Box::<dyn Error>::from(format!("디코딩 할 수 없습니다: {}", e)))
+        Ok(STANDARD.decode(encoded_value)?)
     }
 
     fn decode_str(encoded_value: &str) -> Result<String, Box<dyn Error>> {
         Self::decode(
             encoded_value.as_bytes().to_vec()
         )
-        .and_then(|bytes| String::from_utf8(bytes)
-        .map_err(|e| Box::<dyn Error>::from(format!("디코딩된 바이트를 문자열로 변환할 수 없습니다: {}", e))))
+        .and_then(|bytes| Ok(String::from_utf8(bytes)?))
     }
 }
