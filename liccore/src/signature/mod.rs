@@ -17,7 +17,7 @@ pub trait DigitalSignature: Sized {
     fn sign(&self, data: &[u8]) -> Result<Vec<u8>, Box<dyn Error>>;
 
     /// 서명 검증
-    fn verify(&self, data: &[u8], signature: &[u8]) -> bool;
+    fn verify(&self, data: &str, signature: &[u8]) -> bool;
 
     /// 개인키 PEM 내보내기
     fn private_key_pem(&self) -> Result<String, Box<dyn Error>>;

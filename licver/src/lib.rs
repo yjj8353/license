@@ -1,7 +1,5 @@
 use std::os::raw::c_char;
 
-use base64::prelude::BASE64_STANDARD;
-use base64::Engine;
 use liccore::base::Base;
 use liccore::base::base64::Base64;
 use liccore::ffi_utils::to_str;
@@ -9,62 +7,82 @@ use liccore::signature::DigitalSignature;
 use liccore::signature::ed25519::Ed25519KeyPair;
 use liccore::license::License;
 
+const OK: i32 = 0;
+
+// 라이선스 검증 함수
+const ERR_INVALID_ARG: i32 = -1;
+
+// Base64 디코딩 실패
+const ERR_BASE64_DECODE_FAIL: i32 = -2;
+
+// JSON 파싱 실패
+const ERR_JSON_PARSE_FAIL: i32 = -3;
+
+// 서명 추출 실패
+const ERR_SIGNATURE_FAIL: i32 = -4;
+
+// payload 재구성 실패
+const ERR_PAYLOAD_REBUILD_FAIL: i32 = -5;
+
+// 공개키 PEM 파싱 실패
+const ERR_PUBLIC_KEY_PARSE_FAIL: i32 = -6;
+
+// 서명 검증 실패
+const ERR_SIGNATURE_VERIFY_FAIL: i32 = -7;
+
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn license_verify(
     license_data: *const c_char, // base64(encoded license json)
     public_key: *const c_char,   // PEM public key
 ) -> i32 {
-    // -1: null/invalid input pointer
-    // -2: license_data base64 decode fail
-    // -3: license json parse fail
-    // -4: signature missing or signature base64 decode fail
-    // -5: payload rebuild fail
-    // -6: public key parse fail
-    // -7: signature verify fail
 
-    let encoded_license = match unsafe { to_str(license_data) } {
-        Some(v) => v,
-        None => return -1,
-    };
-    let public_key_pem = match unsafe { to_str(public_key) } {
-        Some(v) => v,
-        None => return -1,
+    // 입력 문자열을 Rust 문자열로 변환
+    let (encoded_license, public_key_pem) = match (unsafe { to_str(license_data) }, unsafe { to_str(public_key) }) {
+        (Some(lic), Some(key)) => (lic, key),
+        _ => return ERR_INVALID_ARG,
     };
 
+    // Base64로 인코딩된 라이선스 JSON 디코딩
     let license_json = match Base64::decode_str(&encoded_license) {
         Ok(v) => v,
-        Err(_) => return -2,
+        Err(_) => return ERR_BASE64_DECODE_FAIL,
     };
 
+    // 라이선스 JSON 파싱
     let mut license = match License::from_json(&license_json) {
         Ok(v) => v,
-        Err(_) => return -3,
+        Err(_) => return ERR_JSON_PARSE_FAIL,
     };
 
+    // 서명 추출
     let signature_b64 = match license.signature.take() {
         Some(v) if !v.is_empty() => v,
-        _ => return -4,
+        _ => return ERR_SIGNATURE_FAIL,
     };
 
-    let signature_bytes = match BASE64_STANDARD.decode(signature_b64.as_bytes()) {
+    // 서명 Base64 디코딩
+    let signature_bytes = match Base64::decode(signature_b64.as_bytes().to_vec()) {
         Ok(v) => v,
-        Err(_) => return -4,
+        Err(_) => return ERR_BASE64_DECODE_FAIL,
     };
 
-    // NOTE: 이 payload 재구성 방식은 licgen의 서명 대상과 정확히 일치해야 함
+    // payload 재구성 (licgen에서 서명할 때 payload와 동일해야 함)
     license.signature = None;
     let payload_json = match license.to_json() {
         Ok(v) => v,
-        Err(_) => return -5,
+        Err(_) => return ERR_PAYLOAD_REBUILD_FAIL,
     };
 
+    // PEM 공개키로 서명 검증
     let mut key_pair = Ed25519KeyPair::new();
     if let Err(_) = key_pair.set_public_key_pem(&public_key_pem) {
-        return -6;
+        return ERR_PUBLIC_KEY_PARSE_FAIL;
     }
-    if key_pair.verify(payload_json.as_bytes(), &signature_bytes) {
-        return 0;
+
+    // 서명 검증
+    if key_pair.verify(&payload_json, &signature_bytes) {
+        return OK;
     } else {
-        return -7;
+        return ERR_SIGNATURE_VERIFY_FAIL;
     }
 }

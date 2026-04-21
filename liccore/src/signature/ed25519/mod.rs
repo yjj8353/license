@@ -68,14 +68,14 @@ impl DigitalSignature for Ed25519KeyPair {
     }
 
     /// 자신의 공개키로 서명 검증
-    fn verify(&self, data: &[u8], signature: &[u8]) -> bool {
+    fn verify(&self, data: &str, signature: &[u8]) -> bool {
         let Ok(sig_bytes): Result<[u8; 64], _> = signature.try_into() else {
             return false;
         };
         let sig = Signature::from_bytes(&sig_bytes);
 
         self.verifying_key()
-            .map(|verifying_key| verifying_key.verify(data, &sig).is_ok())
+            .map(|verifying_key| verifying_key.verify(data.as_bytes(), &sig).is_ok())
             .unwrap_or(false)
     }
 

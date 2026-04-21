@@ -7,6 +7,35 @@ use liccore::signature::ed25519::Ed25519KeyPair;
 use liccore::license::{IssuanceType, License, ReissueReason};
 use liccore::base::base64::Base64;
 
+const OK: i32 = 0;
+
+// 유효하지 않은 포인터
+const ERR_INVALID_POINTER: i32 = -1;
+
+// 유효하지 않은 issuance_type
+const ERR_INVALID_ISSUANCE_TYPE: i32 = -2;
+
+// 유효하지 않은 reissue_reason
+const ERR_INVALID_REISSUE_REASON: i32 = -3;
+
+// 유효하지 않은 License 정보
+const ERR_INVALID_LICENSE_INFO: i32 = -4;
+
+// 입력 값을 License 구조체로 변환하는 과정에서 실패
+const ERR_LICENSE_CONVERSION: i32 = -5;
+
+// License 정보를 JSON 형식으로 변환하는 과정에서 실패
+const ERR_JSON_CONVERSION: i32 = -6;
+
+// out_buf 길이 부족
+const ERR_OUT_BUF_TOO_SMALL: i32 = -7;
+
+// 유효하지 않은 private_key
+const ERR_INVALID_PRIVATE_KEY: i32 = -8;
+
+// 서명 실패
+const ERR_SIGNATURE_FAIL: i32 = -9;
+
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn license_generate(
     product_name: *const c_char,
@@ -23,29 +52,15 @@ pub unsafe extern "C" fn license_generate(
     out_written: *mut usize,
 ) -> i32 {
 
-    // 에러코드
-    // -1: 유효하지 않은 포인터 입력
-    // -2: 유효하지 않은 issuance_type
-    // -3: 유효하지 않은 reissue_reason
-    // -4: 유효하지 않은 License 정보
-    // -5: 입력 값을 License 구조체로 변환하는 과정에서 실패
-    // -6: License 정보를 JSON 형식으로 변환하는 과정에서 실패
-    // -7: out_buf 길이 부족
-    // -8: 유효하지 않은 private_key
-    // -9: 서명 실패
-
     // 값을 입력받을 포인터가 유효한지 확인
     if out_buf.is_null() || out_written.is_null() {
-        return -1;
+        return ERR_INVALID_POINTER;
     }
 
     // private_key 포인터가 유효한지 확인
-    if private_key.is_null() {
-        return -8;
-    }
     let private_key_pem = match unsafe { to_str(private_key) } {
         Some(value) if !value.trim().is_empty() => value,
-        _ => return -8,
+        _ => return ERR_INVALID_PRIVATE_KEY,
     };
 
     // 외부에서 받은 reissue_reason을 ReissueReason enum으로 변환하는 클로저
@@ -54,7 +69,7 @@ pub unsafe extern "C" fn license_generate(
             Some(reason) if !reason.trim().is_empty() => reason
                 .parse::<ReissueReason>()
                 .map(Some)
-                .map_err(|_| -3),
+                .map_err(|_| ERR_INVALID_REISSUE_REASON),
             _ => Ok(None),
         }
     };
@@ -82,7 +97,7 @@ pub unsafe extern "C" fn license_generate(
             // issuance_type 파싱
             let issuance_type = match issuance_type.parse::<IssuanceType>() {
                 Ok(value) => value,
-                Err(_) => return -2,
+                Err(_) => return ERR_INVALID_ISSUANCE_TYPE,
             };
 
             // reissue_reason 파싱 (실패 시 -3 반환, parse_reissue_reason 클로저 참조)
@@ -104,30 +119,30 @@ pub unsafe extern "C" fn license_generate(
             );
 
             if license.validate().is_err() {
-                return -4;
+                return ERR_INVALID_LICENSE_INFO;
             }
 
             license
         }
-        _ => return -5,
+        _ => return ERR_LICENSE_CONVERSION,
     };
 
     // JSON 형식으로 변환
     let mut license_json = match info.to_json() {
         Ok(json) => json,
-        Err(_) => return -6,
+        Err(_) => return ERR_JSON_CONVERSION,
     };
 
     // 개인키로 키쌍 복원
     let key_pair = match Ed25519KeyPair::from_private_pem(&private_key_pem) {
         Ok(value) => value,
-        Err(_) => return -8,
+        Err(_) => return ERR_INVALID_PRIVATE_KEY,
     };
 
     // 서명 생성
     let signature_bytes = match key_pair.sign(license_json.as_bytes()) {
         Ok(bytes) => bytes,
-        Err(_) => return -9,
+        Err(_) => return ERR_SIGNATURE_FAIL,
     };
 
     // signature 필드 값을 설정 한 새로운 json 문자열 생성
@@ -135,7 +150,7 @@ pub unsafe extern "C" fn license_generate(
     info.signature = Some(signature_b64);
     license_json = match info.to_json() {
         Ok(json) => json,
-        Err(_) => return -6,
+        Err(_) => return ERR_JSON_CONVERSION,
     };
 
     let encoded_license_json = Base64::encode_str(license_json.as_str());
@@ -144,7 +159,7 @@ pub unsafe extern "C" fn license_generate(
 
     if need > out_buf_len {
         unsafe { *out_written = bytes.len() };
-        return -7;
+        return ERR_OUT_BUF_TOO_SMALL;
     }
 
     unsafe {
@@ -153,7 +168,7 @@ pub unsafe extern "C" fn license_generate(
         *out_written = bytes.len();
     }
 
-    0
+    OK
 }
 
 #[cfg(test)]

@@ -69,9 +69,9 @@ impl DigitalSignature for RsaKeyPair {
     }
 
     /// 자신의 공개키로 서명 검증
-    fn verify(&self, data: &[u8], signature: &[u8]) -> bool {
+    fn verify(&self, data: &str, signature: &[u8]) -> bool {
         self.public_key()
-            .map(|public_key| verify_with_public_key(&public_key, data, signature))
+            .map(|public_key| verify_with_public_key(&public_key, data.as_bytes(), signature))
             .unwrap_or(false)
     }
 
