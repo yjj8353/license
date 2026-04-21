@@ -100,10 +100,11 @@ impl DigitalSignature for Ed25519KeyPair {
         })
     }
 
-    fn set_public_key_pem(&mut self, public_key_pem: &str) {
+    fn set_public_key_pem(&mut self, public_key_pem: &str) -> Result<(), Box<dyn Error>> {
         self.key_pair.public_key = VerifyingKey::from_public_key_pem(public_key_pem)
-            .map(|key| key.to_bytes().to_vec())
-            .unwrap_or_default();
+            .map(|key| key.to_bytes().to_vec())?;
+    
+        Ok(())
     }
 }
 

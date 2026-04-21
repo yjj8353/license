@@ -29,7 +29,7 @@ pub trait DigitalSignature: Sized {
     fn from_private_pem(pem: &str) -> Result<Self, Box<dyn Error>>;
 
     /// 공개키 설정
-    fn set_public_key_pem(&mut self, public_key_pem: &str);
+    fn set_public_key_pem(&mut self, public_key_pem: &str) -> Result<(), Box<dyn Error>>;
 }
 
 pub mod ed25519;
