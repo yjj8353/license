@@ -22,11 +22,11 @@ pub unsafe extern "C" fn license_verify(
     // -6: public key parse fail
     // -7: signature verify fail
 
-    let encoded_license = match to_str(license_data) {
+    let encoded_license = match unsafe { to_str(license_data) } {
         Some(v) => v,
         None => return -1,
     };
-    let public_key_pem = match to_str(public_key) {
+    let public_key_pem = match unsafe { to_str(public_key) } {
         Some(v) => v,
         None => return -1,
     };

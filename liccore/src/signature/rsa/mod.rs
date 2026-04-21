@@ -58,7 +58,7 @@ impl DigitalSignature for RsaKeyPair {
     }
 
     /// 데이터를 PKCS1v15 + SHA-256으로 서명 → 서명 바이트 반환
-    fn sign(&self, data: &[u8]) -> Vec<u8> {
+    fn sign(&self, data: &[u8]) -> Result<Vec<u8>, Box<dyn Error>> {
         self.private_key()
             .map(|private_key| {
                 SigningKey::<Sha256>::new(private_key)
@@ -66,7 +66,6 @@ impl DigitalSignature for RsaKeyPair {
                     .to_bytes()
                     .to_vec()
             })
-            .unwrap_or_default()
     }
 
     /// 자신의 공개키로 서명 검증

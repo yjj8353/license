@@ -59,13 +59,12 @@ impl DigitalSignature for Ed25519KeyPair {
     }
 
     /// 데이터를 Ed25519로 서명 → 서명 바이트(64 bytes) 반환
-    fn sign(&self, data: &[u8]) -> Vec<u8> {
+    fn sign(&self, data: &[u8]) -> Result<Vec<u8>, Box<dyn Error>> {
         self.signing_key()
             .map(|signing_key| {
                 let sig: Signature = signing_key.sign(data);
                 sig.to_bytes().to_vec()
             })
-            .unwrap_or_default()
     }
 
     /// 자신의 공개키로 서명 검증

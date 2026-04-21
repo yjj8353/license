@@ -32,6 +32,7 @@ pub unsafe extern "C" fn license_generate(
     // -6: License 정보를 JSON 형식으로 변환하는 과정에서 실패
     // -7: out_buf 길이 부족
     // -8: 유효하지 않은 private_key
+    // -9: 서명 실패
 
     // 값을 입력받을 포인터가 유효한지 확인
     if out_buf.is_null() || out_written.is_null() {
@@ -42,7 +43,7 @@ pub unsafe extern "C" fn license_generate(
     if private_key.is_null() {
         return -8;
     }
-    let private_key_pem = match to_str(private_key) {
+    let private_key_pem = match unsafe { to_str(private_key) } {
         Some(value) if !value.trim().is_empty() => value,
         _ => return -8,
     };
@@ -60,13 +61,13 @@ pub unsafe extern "C" fn license_generate(
 
     // 외부로부터 입력받은 값으로 License 구조체 생성
     let mut info = match (
-        to_str(product_name),
-        to_str(issuance_type),
-        to_str(license_key),
-        to_str(domain),
-        to_str(issued_at),
-        to_str(expires_at),
-        to_str(license_version),
+        unsafe { to_str(product_name) },
+        unsafe { to_str(issuance_type) },
+        unsafe { to_str(license_key) },
+        unsafe { to_str(domain) },
+        unsafe { to_str(issued_at) },
+        unsafe { to_str(expires_at) },
+        unsafe { to_str(license_version) },
     ) {
         (
             Some(product_name),
@@ -85,7 +86,7 @@ pub unsafe extern "C" fn license_generate(
             };
 
             // reissue_reason 파싱 (실패 시 -3 반환, parse_reissue_reason 클로저 참조)
-            let reissue_reason = match parse_reissue_reason(to_str(reissue_reason)) {
+            let reissue_reason = match parse_reissue_reason(unsafe { to_str(reissue_reason) }) {
                 Ok(value) => value,
                 Err(code) => return code,
             };
@@ -117,12 +118,17 @@ pub unsafe extern "C" fn license_generate(
         Err(_) => return -6,
     };
 
-    // private_key로 license_json에 서명 후, signature 필드에 서명값을 설정
+    // 개인키로 키쌍 복원
     let key_pair = match Ed25519KeyPair::from_private_pem(&private_key_pem) {
         Ok(value) => value,
         Err(_) => return -8,
     };
-    let signature_bytes = key_pair.sign(license_json.as_bytes());
+
+    // 서명 생성
+    let signature_bytes = match key_pair.sign(license_json.as_bytes()) {
+        Ok(bytes) => bytes,
+        Err(_) => return -9,
+    };
 
     // signature 필드 값을 설정 한 새로운 json 문자열 생성
     let signature_b64 = Base64::encode(signature_bytes);

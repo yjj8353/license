@@ -14,7 +14,7 @@ pub trait DigitalSignature: Sized {
     fn generate() -> Result<Self, Box<dyn Error>>;
 
     /// 데이터 서명
-    fn sign(&self, data: &[u8]) -> Vec<u8>;
+    fn sign(&self, data: &[u8]) -> Result<Vec<u8>, Box<dyn Error>>;
 
     /// 서명 검증
     fn verify(&self, data: &[u8], signature: &[u8]) -> bool;
