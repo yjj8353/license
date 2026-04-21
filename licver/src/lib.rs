@@ -59,7 +59,9 @@ pub unsafe extern "C" fn license_verify(
     };
 
     let mut key_pair = Ed25519KeyPair::new();
-    key_pair.set_public_key_pem(&public_key_pem);
+    if let Err(_) = key_pair.set_public_key_pem(&public_key_pem) {
+        return -6;
+    }
     if key_pair.verify(payload_json.as_bytes(), &signature_bytes) {
         return 0;
     } else {
