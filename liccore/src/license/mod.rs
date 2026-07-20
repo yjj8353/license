@@ -85,8 +85,14 @@ pub struct License {
     // 재발급 사유
     pub reissue_reason: Option<ReissueReason>,
 
-    // 라이선스 키
-    pub license_key: String,
+    // 시스템 UUID
+    pub system_uuid: String,
+
+    // 머신 ID
+    pub machine_id: String,
+
+    // MAC 주소
+    pub mac_address: String,
 
     // 도메인
     pub domain: String,
@@ -111,7 +117,9 @@ impl License {
         product_name: String,
         issuance_type: IssuanceType,
         reissue_reason: Option<ReissueReason>,
-        license_key: String,
+        system_uuid: String,
+        machine_id: String,
+        mac_address: String,
         domain: String,
         issued_at: String,
         expires_at: String,
@@ -122,7 +130,9 @@ impl License {
             product_name,
             issuance_type,
             reissue_reason,
-            license_key,
+            system_uuid,
+            machine_id,
+            mac_address,
             domain,
             issued_at,
             expires_at,
@@ -163,7 +173,9 @@ mod tests {
             product_name: "Dashboard".to_string(),
             issuance_type: IssuanceType::Initial,
             reissue_reason: None,
-            license_key: "XXXX-YYYY-ZZZZ-AAAA".to_string(),
+            system_uuid: "system-uuid-1234".to_string(),
+            machine_id: "machine-id-5678".to_string(),
+            mac_address: "00:11:22:33:44:55".to_string(),
             domain: "example.com".to_string(),
             issued_at: "2026-04-12T00:00:00Z".to_string(),
             expires_at: "2027-04-12T00:00:00Z".to_string(),
@@ -176,8 +188,8 @@ mod tests {
     fn to_json_produces_valid_json() {
         let json = sample_license().to_json().expect("직렬화 실패");
 
-        assert!(json.contains("license_key"));
-        assert!(json.contains("XXXX-YYYY-ZZZZ-AAAA"));
+        assert!(json.contains("system_uuid"));
+        assert!(json.contains("system-uuid-1234"));
         assert!(json.contains("example.com"));
     }
 
@@ -187,7 +199,9 @@ mod tests {
         let json = original.to_json().expect("직렬화 실패");
         let restored = License::from_json(&json).expect("역직렬화 실패");
 
-        assert_eq!(restored.license_key, original.license_key);
+        assert_eq!(restored.system_uuid, original.system_uuid);
+        assert_eq!(restored.machine_id, original.machine_id);
+        assert_eq!(restored.mac_address, original.mac_address);
         assert_eq!(restored.domain, original.domain);
         assert_eq!(restored.issued_at, original.issued_at);
         assert_eq!(restored.expires_at, original.expires_at);

@@ -31,7 +31,9 @@ fn end_to_end_flow_generates_signs_and_verifies_license() {
     let product_name = CString::new("Dashboard").unwrap();
     let issuance_type = CString::new("initial").unwrap();
     let reissue_reason = CString::new("").unwrap();
-    let license_key = CString::new("E2E-TEST-KEY-0001").unwrap();
+    let system_uuid = CString::new("system-uuid-1234").unwrap();
+    let machine_id = CString::new("machine-id-5678").unwrap();
+    let mac_address = CString::new("00:11:22:33:44:55").unwrap();
     let domain = CString::new("example.com").unwrap();
     let issued_at = CString::new("2026-04-20T00:00:00Z").unwrap();
     let expires_at = CString::new("2027-04-20T00:00:00Z").unwrap();
@@ -46,7 +48,9 @@ fn end_to_end_flow_generates_signs_and_verifies_license() {
             product_name.as_ptr(),
             issuance_type.as_ptr(),
             reissue_reason.as_ptr(),
-            license_key.as_ptr(),
+            system_uuid.as_ptr(),
+            machine_id.as_ptr(),
+            mac_address.as_ptr(),
             domain.as_ptr(),
             issued_at.as_ptr(),
             expires_at.as_ptr(),
